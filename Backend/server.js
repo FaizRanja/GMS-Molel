@@ -124,51 +124,84 @@
 // //     return nsdjfjsdaew Promise((resolve) => setTimeout(resolve, ms));
 // // }
 
+// const net = require('net');
+
+// // GSM module IP and port
+// const simIp = '10.127.249.205';  // GSM module's IP address
+// const simPort = 1234;           // GSM module's port (example)
+
+// // Data to send (e.g., price and meter values)
+// const message = "Price:100,Meter:200";
+
+// // Create a TCP client
+// const client = new net.Socket();
+
+// // Connect to the GSM module via TCP
+// client.connect(simPort, simIp, () => {
+//   console.log('Connected to GSM module.');
+  
+//   // Send the data to the GSM module
+//   client.write(message, (err) => {
+//     if (err) {
+//       console.error('Error while sending data:', err.message);
+//     } else {
+//       console.log('Data sent successfully.');
+//     }
+//   });
+// });
+
+// // Handle data received from the GSM module
+// client.on('data', (data) => {
+//   console.log('Response from GSM module:', data.toString());
+//   client.destroy(); // Close connection after receiving the response
+// });
+
+// // Handle errors
+// client.on('error', (err) => {
+//   console.error('Connection error:', err.message);
+//   client.destroy();
+// });
+
+// // Handle connection timeout
+// client.on('timeout', () => {
+//   console.error('Connection timeout.');
+//   client.destroy();
+// });
+
+// // Handle connection closure
+// client.on('close', () => {
+//   console.log('Connection closed.');
+// });
+
+
 const net = require('net');
 
-// GSM module IP and port
-const simIp = '10.140.184.180';  // GSM module's IP address
-const simPort = 1234;           // GSM module's port (example)
+// GSM Module ka IP aur Port
+const GSM_IP = '10.127.249.205'; // Replace karo GSM ka IP
+const GSM_PORT = 1234;        // Replace karo GSM ka port
 
-// Data to send (e.g., price and meter values)
-const message = "Price:100,Meter:200";
-
-// Create a TCP client
+// TCP Client Create karo
 const client = new net.Socket();
 
-// Connect to the GSM module via TCP
-client.connect(simPort, simIp, () => {
-  console.log('Connected to GSM module.');
-  
-  // Send the data to the GSM module
-  client.write(message, (err) => {
-    if (err) {
-      console.error('Error while sending data:', err.message);
-    } else {
-      console.log('Data sent successfully.');
-    }
-  });
+client.connect(GSM_PORT, GSM_IP, () => {
+    console.log(`Connected to GSM module at ${GSM_IP}:${GSM_PORT}`);
+
+    // Data Send karo
+    const message = 'Hello GSM Module!';
+    client.write(message);
+    console.log(`Message sent: ${message}`);
 });
 
-// Handle data received from the GSM module
 client.on('data', (data) => {
-  console.log('Response from GSM module:', data.toString());
-  client.destroy(); // Close connection after receiving the response
+    console.log(`Received: ${data.toString()}`);
 });
 
-// Handle errors
 client.on('error', (err) => {
-  console.error('Connection error:', err.message);
-  client.destroy();
+    console.error(`Error: ${err.message}`);
 });
 
-// Handle connection timeout
-client.on('timeout', () => {
-  console.error('Connection timeout.');
-  client.destroy();
-});
-
-// Handle connection closure
 client.on('close', () => {
-  console.log('Connection closed.');
+    console.log('Connection closed');
 });
+
+ 
