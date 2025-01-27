@@ -1,18 +1,19 @@
 
-// const server = require("./app");
-// const dbConnection = require("./Db/Db");
+const server = require("./app");
+const dbConnection = require("./Db/Db");
 
-// const port = process.env.PORT || 3001;
-// dbConnection()
-//     .then(() => {
-//         server.listen(port, () => {
-//             console.log(`Server is running on port  http://localhost:${port}`);
-//         });
-//     })
-//     .catch((error) => {
-//         console.error("Error connecting to database:", error);
-//         process.exit(1);
-//     });
+
+const port = process.env.PORT || 3001;
+dbConnection()
+    .then(() => {
+        server.listen(port, () => {
+            console.log(`Server is running on port  http://localhost:${port}`);
+        });
+    })
+    .catch((error) => {
+        console.error("Error connecting to database:", error);
+        process.exit(1);
+    });
 
 
 
@@ -174,34 +175,34 @@
 // });
 
 
-const net = require('net');
+// const net = require('net');
 
-// GSM Module ka IP aur Port
-const GSM_IP = '10.127.249.205'; // Replace karo GSM ka IP
-const GSM_PORT = 1234;        // Replace karo GSM ka port
+// // GSM Module ka IP aur Port
+// const GSM_IP = '10.127.249.205'; // Replace karo GSM ka IP
+// const GSM_PORT = 1234;        // Replace karo GSM ka port
 
-// TCP Client Create karo
-const client = new net.Socket();
+// // TCP Client Create karo
+// const client = new net.Socket();
 
-client.connect(GSM_PORT, GSM_IP, () => {
-    console.log(`Connected to GSM module at ${GSM_IP}:${GSM_PORT}`);
+// client.connect(GSM_PORT, GSM_IP, () => {
+//     console.log(`Connected to GSM module at ${GSM_IP}:${GSM_PORT}`);
 
-    // Data Send karo
-    const message = 'Hello GSM Module!';
-    client.write(message);
-    console.log(`Message sent: ${message}`);
-});
+//     // Data Send karo
+//     const message = 'Hello GSM Module!';
+//     client.write(message);
+//     console.log(`Message sent: ${message}`);
+// });
 
-client.on('data', (data) => {
-    console.log(`Received: ${data.toString()}`);
-});
+// client.on('data', (data) => {
+//     console.log(`Received: ${data.toString()}`);
+// });
 
-client.on('error', (err) => {
-    console.error(`Error: ${err.message}`);
-});
+// client.on('error', (err) => {
+//     console.error(`Error: ${err.message}`);
+// });
 
-client.on('close', () => {
-    console.log('Connection closed');
-});
+// client.on('close', () => {
+//     console.log('Connection closed');
+// });
 
  

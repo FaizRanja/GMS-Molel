@@ -1,67 +1,68 @@
 const mongoose = require("mongoose");
-const jwt=require("jsonwebtoken")
-const bcrypt=require("bcryptjs")
+const validator = require("validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 
 const userSchema = new mongoose.Schema({
-    UserName: {
-        firstName: {
-            type: String,
-            required: true,
-            minlength: [4, "First name must be at least 4 characters long"],
-            maxlength: [50, "First name can't be more than 50 characters long"]
-        },
-        lastName: {
-            type: String,
-            required: true,
-            minlength: [4, "Last name must be at least 4 characters long"],
-            maxlength: [50, "Last name can't be more than 50 characters long"]
-        }
+Username: {
+    type: String,
+    required: [true, "Please Enter Your Name"],
+    maxLength: [30, "Name cannot exceed 30 characters"],
+    minLength: [4, "Name should have more than 4 characters"],
+  },
+  email: {
+    type: String,
+    required: [true, "Please Enter Your Email"],
+    unique: true,
+    validate: [validator.isEmail, "Please Enter a valid Email"],
+  },
+  password: {
+    type: String,
+    required: [true, "Please Enter Your Password"],
+    minLength: [8, "Password should be greater than 8 characters"],
+    select: false,
+  },
+  avatar: {
+    public_id: {
+      type: String,
+      required: true,
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        validate: {
-            validator: emailValidator,
-            message: "Invalid email format"
-        },
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "Please enter a valid email address"],
-
+    url: {
+      type: String,
+      required: true,
     },
-    password: {
-        type: String,
-        required: true,
-        select:false    },
-    socketId: {
-        type: String,
-    }
-})
-
-function emailValidator(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-userSchema.pre("save", async function (next) {
-    if(this.isModified("password")){
-        this.password=await bcrypt.hash(this.password,20)
-    }
-    
+  },
+  
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-userSchema.methods.generateAuthToken = async function () {
-    const token = jwt.sign({_id: this._id}, process.env.JWT_SECRET,);
-    return token;
+// Hashing password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+  this.password = await bcrypt.hash(this.password, 12);
+});
+
+// JWT Web Token
+userSchema.methods.getJWTToken = function () {
+  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
 };
 
+
+
+// Compare password
 userSchema.methods.comparePassword = async function (password) {
-    return await bcrypt.compare(password, this.password);
+  return await bcrypt.compare(password, this.password);
 };
 
-module.exports = mongoose.model("User", userSchema);
+// Generating Password Reset Token
 
 
-
-
-
+module.exports = mongoose.model("user", userSchema);
