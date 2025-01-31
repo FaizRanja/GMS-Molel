@@ -3,6 +3,8 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const cloudinary = require('cloudinary').v2;
+const cookieParser = require("cookie-parser");
+const bodyParser = require('body-parser');
 dotenv.config();
 
 
@@ -24,6 +26,10 @@ server.use(cors(
 ));
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
+server.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));
+
+server.use(cookieParser());
+
 
 
 // Function to send data to the GSM module via TCP
@@ -99,7 +105,8 @@ server.post("/api/send-data", async (req, res) => {
 
 // configure the routes
 
-const userroutes=require("./routes/user.routes")
+const userroutes=require("./routes/user.routes");
+// const bodyParser = require("body-parser");
 
 server.use("/api/v1/user",userroutes)
 

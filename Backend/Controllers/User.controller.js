@@ -94,7 +94,7 @@ exports.LoginUser = CatchAsynicHnadler(async (req, res, next) => {
 // then send the responce 
 
 exports.Changepassword = CatchAsynicHnadler(async (req, res, next) => {
-    const { oldpassword, confirmpassword } = req.body
+    const { oldpassword, confirmpassword  ,}= req.body
     if (!oldpassword || !confirmpassword) {
         return next(new ApiErrHandler("All Field all are required ", 201))
     }
@@ -102,6 +102,8 @@ exports.Changepassword = CatchAsynicHnadler(async (req, res, next) => {
     if (!user) {
         return next(new ApiErrHandler("User not found ", 201))
     }
+
+
     const ispassword = user.ComparePassword(oldpassword)
     if (!ispassword) {
         return next(new ApiErrHandler("Old password is not correct ", 201))
@@ -139,43 +141,43 @@ exports.LougOutUser = CatchAsynicHnadler(async (req, res, next) => {
 // then find the user from data base 
 // then modfly the data 
 
-// exports.UpdateUserProfile = CatchAsynicHnadler(async (req, res, next) => {
-//     const newUserData = {
-//         name: req.body.name,
-//         email: req.body.email,
-//     };
+exports.UpdateUserProfile = CatchAsynicHnadler(async (req, res, next) => {
+    const newUserData = {
+        name: req.body.name,
+        email: req.body.email,
+    };
 
-//     if (req.body.avatar) {
-//         const user = await User.findById(req.user.id);
+    if (req.body.avatar) {
+        const user = await User.findById(req.user.id);
 
-//         // Delete previous avatar
-//         const imageId = user.avatar.public_id;
-//         await cloudinary.uploader.destroy(imageId);
+        // Delete previous avatar
+        const imageId = user.avatar.public_id;
+        await cloudinary.uploader.destroy(imageId);
 
-//         // Upload new avatar
-//         const myCloud = await cloudinary.uploader.upload(req.body.avatar, {
-//             folder: "avatars",
-//             width: 150,
-//             crop: "scale",
-//         });
+        // Upload new avatar
+        const myCloud = await cloudinary.uploader.upload(req.body.avatar, {
+            folder: "avatars",
+            width: 150,
+            crop: "scale",
+        });
 
-//         newUserData.avatar = {
-//             public_id: myCloud.public_id,
-//             url: myCloud.secure_url,
-//         };
-//     }
+        newUserData.avatar = {
+            public_id: myCloud.public_id,
+            url: myCloud.secure_url,
+        };
+    }
 
-//     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
-//         new: true,
-//         runValidators: true,
-//     });
+    const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+        new: true,
+        runValidators: true,
+    });
 
-//     res.status(200).json({
-//         success: true,
-//         message: "Profile updated successfully",
-//         user,
-//     });
-// });
+    res.status(200).json({
+        success: true,
+        message: "Profile updated successfully",
+        user,
+    });
+});
 
 
 // Forget Password 
