@@ -93,25 +93,20 @@ exports.LoginUser = CatchAsynicHnadler(async (req, res, next) => {
 // then set the new password 
 // then send the responce 
 
-exports.Changepassword = CatchAsynicHnadler(async (req, res, next) => {
-    const { oldpassword, confirmpassword  ,}= req.body
-    if (!oldpassword || !confirmpassword) {
-        return next(new ApiErrHandler("All Field all are required ", 201))
+exports.updatePassword = CatchAsynicHnadler(async (req, res, next) => {
+    const user = await User.findById(req.user.id).select("+password");
+    const isPasswordMatched = await user.ComparePassword(req.body.oldPassword);
+    if (!isPasswordMatched) {
+      return next(new  ApiErrHandler ("Old password is incorrect", 400));
     }
-    const user = await User.findById(req.user.id).select('+password')
-    if (!user) {
-        return next(new ApiErrHandler("User not found ", 201))
+    if (req.body.newPassword !== req.body.confirmPassword) {
+      return next(new ApiErrHandler("password does not match", 400));
     }
-
-
-    const ispassword = user.ComparePassword(oldpassword)
-    if (!ispassword) {
-        return next(new ApiErrHandler("Old password is not correct ", 201))
-    }
-    user.password = confirmpassword
-    await user.save()
-    sendToken(user, 200, res, message = "Password Change Successfully")
-})
+    user.password = req.body.newPassword;
+    await user.save();
+  
+    sendToken(user, 200, res);
+  });
 
 // controller for user logout User 
 
@@ -141,44 +136,111 @@ exports.LougOutUser = CatchAsynicHnadler(async (req, res, next) => {
 // then find the user from data base 
 // then modfly the data 
 
-exports.UpdateUserProfile = CatchAsynicHnadler(async (req, res, next) => {
-    const newUserData = {
-        name: req.body.name,
-        email: req.body.email,
-    };
+exports.updateUserprofile = CatchAsynicHnadler(async (req, res, next) => {
+    try {
+        // Validate that req.user exists
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                message: "User not authenticated",
+            });
+        }
 
-    if (req.body.avatar) {
-        const user = await User.findById(req.user.id);
+        const { Username, email, avatar } = req.body;
 
-        // Delete previous avatar
-        const imageId = user.avatar.public_id;
-        await cloudinary.uploader.destroy(imageId);
+        // Validate input fields
+        if (!Username || !email) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required (Username, email)",
+            });
+        }
 
-        // Upload new avatar
-        const myCloud = await cloudinary.uploader.upload(req.body.avatar, {
-            folder: "avatars",
-            width: 150,
-            crop: "scale",
+        // Initialize data for update
+        const newData = { Username, email };
+
+        if (avatar) {
+            const user = await User.findById(req.user.id);
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                });
+            }
+
+            // Delete previous avatar if it exists
+            if (user.avatar && user.avatar.public_id) {
+                try {
+                    await cloudinary.uploader.destroy(user.avatar.public_id);
+                } catch (error) {
+                    return res.status(500).json({
+                        success: false,
+                        message: "Failed to delete old avatar",
+                    });
+                }
+            }
+
+            // Upload new avatar
+            try {
+                const myCloud = await cloudinary.uploader.upload(avatar, {
+                    folder: "avatars",
+                    width: 150,
+                    crop: "scale",
+                });
+
+                newData.avatar = {
+                    public_id: myCloud.public_id,
+                    url: myCloud.secure_url,
+                };
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Failed to upload new avatar",
+                });
+            }
+        }
+
+        // Update the user in the database
+        const updatedUser = await User.findByIdAndUpdate(req.user.id, newData, {
+            new: true, // Return the updated document
+            runValidators: true, // Run validation on update
         });
 
-        newUserData.avatar = {
-            public_id: myCloud.public_id,
-            url: myCloud.secure_url,
-        };
+        // Check if the user was found and updated
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        // Send a success response with updated user data
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user: updatedUser,
+        });
+    } catch (error) {
+        // Pass errors to the global error handler
+        next(error);
     }
-
-    const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
-        new: true,
-        runValidators: true,
-    });
-
-    res.status(200).json({
-        success: true,
-        message: "Profile updated successfully",
-        user,
-    });
 });
 
+
+
+
+
+// get user details
+
+
+exports.getUserdatils=CatchAsynicHnadler(async(req,res,_next)=>{
+    const user=await User.findById(req.user.id)
+    res.status(200).json({
+      success:true,
+      user,
+    })
+    })
 
 // Forget Password 
 // get the information for the user by body
