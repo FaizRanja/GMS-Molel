@@ -1,34 +1,36 @@
 const net = require('net');
 
-const SERVER_PORT = 8888;
+const SERVER_PORT = 8080;
 const SERVER_IP = '0.0.0.0'; // Listen on all interfaces
 
-// Create a TCP server
 const server = net.createServer((socket) => {
   console.log('🌐 Client connected:', socket.remoteAddress, socket.remotePort);
 
-  // Handle incoming data
+  // Jab bhi GSM module data bhejega, ye function chalega
   socket.on('data', (data) => {
     console.log('📥 Received data:', data.toString());
   });
 
-  // Handle client disconnection
+  // Agar GSM module disconnect ho jaye
   socket.on('end', () => {
     console.log('❌ Client disconnected');
   });
 
-  // Handle errors
+  // Agar koi error aaye
   socket.on('error', (err) => {
     console.log('❌ Socket error:', err.message);
   });
+
+  // GSM module ko response dena
+  socket.write('Hello from Node.js Server!\n');
 });
 
-// Start the server
+// Server ko start karna
 server.listen(SERVER_PORT, SERVER_IP, () => {
   console.log(`🚀 Server is listening on ${SERVER_IP}:${SERVER_PORT}`);
 });
 
-// Handle server errors
+// Server error handle karna
 server.on('error', (err) => {
   console.log('❌ Server error:', err.message);
 });
